@@ -14,10 +14,10 @@ class StringUtils {
 public:
     /**
      * UTF8转Local
-     * @param u8str
+     * @param utf8str utf8字符串
      * @return
      */
-    static std::string u8ToLocal(const char* u8str);
+    static std::string u8ToLocal(const char* utf8str);
 };
 
 } // utils

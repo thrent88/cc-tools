@@ -9,6 +9,7 @@ file(GLOB_RECURSE SOURCES
 add_executable(${BIN_NAME} ${SOURCES})
 target_link_libraries(${BIN_NAME} CC_Tools gtest gmock)
 target_compile_definitions(${BIN_NAME} PUBLIC TEST_FILE="${CMAKE_CURRENT_SOURCE_DIR}/script/Tests.txt")
+target_compile_definitions(${BIN_NAME} PUBLIC TEST_ZH_FILE="${CMAKE_CURRENT_SOURCE_DIR}/script/中文径tes.txt")
 
 if (MSVC)
     target_compile_options(${BIN_NAME} PRIVATE /utf-8)

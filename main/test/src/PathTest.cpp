@@ -10,7 +10,7 @@
 using namespace CC_Tools::utils;
 
 TEST(PathTest, getFileName) {
-    std::string filePath = TEST_FILE;
+    std::string filePath = TEST_ZH_FILE;
 
     std::string fileName = PathUtils::getFileName(filePath.c_str());
     std::string fileName2 = PathUtils::getFileName(filePath.c_str(), false);
@@ -20,7 +20,7 @@ TEST(PathTest, getFileName) {
 }
 
 TEST(PathTest, getExist) {
-    bool exist = PathUtils::exists(StringUtils::u8ToLocal("E:\\Cpp\\CPP\\cc-tools\\main\\test\\script\\中文径ts").c_str());
+    bool exist = PathUtils::exists(StringUtils::u8ToLocal(TEST_ZH_FILE).c_str());
 
-    std::cout << "exist: " << exist << std::endl;
+    EXPECT_TRUE(exist);
 }

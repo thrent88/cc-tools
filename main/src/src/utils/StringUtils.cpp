@@ -40,8 +40,8 @@ namespace fs = ghc::filesystem;
 
 namespace CC_Tools {
 namespace utils {
-    std::string StringUtils::u8ToLocal(const char *u8str) {
-        return fs::u8path(u8str).string();
+    std::string StringUtils::u8ToLocal(const char *utf8str) {
+        return fs::u8path(utf8str).string();
     }
 } // utils
 } // CC_Tools

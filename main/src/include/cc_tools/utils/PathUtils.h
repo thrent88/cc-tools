@@ -30,9 +30,10 @@ public:
 
     /**
      * 获取程序运行时路径
+     * @param argv0 需要输入argv[0]
      * @return
      */
-    static std::string getRuntimePath();
+    static std::string getRuntimePath(const char* argv0);
 
     /**
      * 判断文件是否存在

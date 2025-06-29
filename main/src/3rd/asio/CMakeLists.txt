@@ -4,13 +4,13 @@ project(asio-cmake)
 
 set(ASIO_CMAKE_ASIO_TAG asio-1-34-0)
 
-if(NOT DEFINED ASIO_CMAKE_ASIO_TAG)
+if (NOT DEFINED ASIO_CMAKE_ASIO_TAG)
     message(FATAL_ERROR "You must specify ASIO_CMAKE_ASIO_TAG!")
-endif()
+endif ()
 
-if(NOT DEFINED ASIO_CMAKE_ASIO_SOURCE_DIR)
+if (NOT DEFINED ASIO_CMAKE_ASIO_SOURCE_DIR)
     set(ASIO_CMAKE_ASIO_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
-endif()
+endif ()
 
 set(ASIO_CMAKE_ASIO_DEP_DIR "${ASIO_CMAKE_ASIO_SOURCE_DIR}/asio-${ASIO_CMAKE_ASIO_TAG}-src")
 
@@ -26,11 +26,11 @@ target_compile_definitions(asio
         ASIO_NO_DEPRECATED
 )
 
-if(UNIX)
+if (UNIX)
     target_link_libraries(asio
             INTERFACE pthread
     )
-elseif(WIN32)
+elseif (WIN32)
     # macro see @ https://stackoverflow.com/a/40217291/1746503
     macro(get_WIN32_WINNT version)
         if (CMAKE_SYSTEM_VERSION)
@@ -47,13 +47,13 @@ elseif(WIN32)
             # Prepend each digit with a zero.
             string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
             set(${version} "0x${ver}")
-        endif(CMAKE_SYSTEM_VERSION)
+        endif (CMAKE_SYSTEM_VERSION)
     endmacro(get_WIN32_WINNT)
 
-    if(NOT DEFINED _WIN32_WINNT)
+    if (NOT DEFINED _WIN32_WINNT)
         get_WIN32_WINNT(ver)
         set(_WIN32_WINNT ${ver})
-    endif()
+    endif ()
 
     message(STATUS "Set _WIN32_WINNET=${_WIN32_WINNT}")
 
@@ -62,4 +62,10 @@ elseif(WIN32)
             _WIN32_WINNT=${_WIN32_WINNT}
             WIN32_LEAN_AND_MEAN
     )
-endif()
+
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+        target_link_libraries(asio INTERFACE
+                libgdi32.a libwsock32.a libws2_32.a
+        )
+    endif ()
+endif ()

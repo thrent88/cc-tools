@@ -16,7 +16,7 @@ public:
      * @param logDir 日志存储目录
      * @return std::shared_ptr<spdlog::logger> 
      */
-    static std::shared_ptr<spdlog::logger> createLogger(std::string prefix, std::string logDir);
+    static std::shared_ptr<spdlog::logger> createLogger(std::string prefix, std::string logName);
 };
 
 }

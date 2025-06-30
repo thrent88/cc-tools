@@ -6,7 +6,7 @@
 namespace CC_Tools {
 namespace utils {
 
-std::shared_ptr<spdlog::logger> LogUtils::createLogger(std::string prefix, std::string logDir) {
+std::shared_ptr<spdlog::logger> LogUtils::createLogger(std::string prefix, std::string logName) {
     std::shared_ptr<spdlog::logger> log;
     auto log_std_output = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
@@ -20,7 +20,7 @@ std::shared_ptr<spdlog::logger> LogUtils::createLogger(std::string prefix, std::
     sinks.push_back(log_std_output);
     sinks.push_back(log_basic_file_output);
 
-    log = std::make_shared<spdlog::logger>(logDir, std::begin(sinks), std::end(sinks));
+    log = std::make_shared<spdlog::logger>(logName, std::begin(sinks), std::end(sinks));
     return log;
 }
 

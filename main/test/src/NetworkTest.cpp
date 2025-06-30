@@ -29,11 +29,11 @@ TEST(CCNetworkTest, UdpEndpoint) {
 TEST(CCNetworkTest, TCPServer) {
     TcpServer server("127.0.0.1", 1234);
     server.setMessageHandler(
-        [](std::shared_ptr<Session> session, const std::vector<uint8_t>& data, size_t size) {
-            std::cout << "recv:" << data.size() << std::endl;
-            session->send_to(data.data(), size);
+        [](Session* session, uint8_t* data, size_t size) {
+            std::cout << "recv:" << size << std::endl;
+            session->send_to(data, size);
         },
-        [](std::shared_ptr<Session> session) { std::cout << "connected:" << session->getSessionIp() << std::endl; },
+        [](Session* session) { std::cout << "connected:" << session->getSessionIp() << std::endl; },
         [](Session* session) { std::cout << "disconnected:" << session->getSessionIp() << std::endl; });
     server.start();
 

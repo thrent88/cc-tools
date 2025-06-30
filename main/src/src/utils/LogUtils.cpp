@@ -21,6 +21,7 @@ std::shared_ptr<spdlog::logger> LogUtils::createLogger(std::string prefix, std::
     sinks.push_back(log_basic_file_output);
 
     log = std::make_shared<spdlog::logger>(prefix, std::begin(sinks), std::end(sinks));
+    return log;
 }
 
 }

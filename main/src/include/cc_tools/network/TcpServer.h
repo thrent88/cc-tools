@@ -9,13 +9,12 @@
 #include <memory>
 #include <thread>
 
-#include "cc_tools/utils/IdAllocator.h"
 #include "asio.hpp"
+#include "cc_tools/utils/IdAllocator.h"
+
 
 namespace CC_Tools {
 namespace network {
-
-using asio::ip::tcp;
 
 class Session
     : public std::enable_shared_from_this<Session>  // 从enable_shared_from_this继承的类需要使用智能指针管理资源
@@ -59,11 +58,11 @@ protected:
 
     void do_write(std::size_t length);
 
-    tcp::socket          socket_;
-    std::vector<uint8_t> data_;
-    MessageHandler       onMessage_;
-    OnConnected          onConnected_;
-    OnDisconnected       onDisconnected_;
+    asio::ip::tcp::socket socket_;
+    std::vector<uint8_t>  data_;
+    MessageHandler        onMessage_;
+    OnConnected           onConnected_;
+    OnDisconnected        onDisconnected_;
 
     int sessionId_;
 };
@@ -93,9 +92,9 @@ private:
 
     utils::IdAllocator allocator_;
 
-    std::shared_ptr<tcp::acceptor> acceptor_;
-    std::shared_ptr<tcp::socket>   socket_;
-    std::shared_ptr<tcp::endpoint> endpoint;
+    std::shared_ptr<asio::ip::tcp::acceptor> acceptor_;
+    std::shared_ptr<asio::ip::tcp::socket>   socket_;
+    std::shared_ptr<asio::ip::tcp::endpoint> endpoint;
 
     Session::MessageHandler onMessage_;
     Session::OnConnected    onConnected_;

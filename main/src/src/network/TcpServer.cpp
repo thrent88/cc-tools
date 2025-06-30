@@ -9,6 +9,8 @@
 namespace CC_Tools {
 namespace network {
 
+using asio::ip::tcp;
+
 TcpServer::TcpServer(const char* address, short port) {
     this->endpoint = std::make_shared<tcp::endpoint>(asio::ip::make_address(address), port);
     this->acceptor_ = std::make_shared<tcp::acceptor>(this->io_ctx_, *this->endpoint);

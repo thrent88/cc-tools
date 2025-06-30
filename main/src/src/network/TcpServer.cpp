@@ -90,7 +90,7 @@ Session::~Session() {
 
 void Session::start() {
     if (onConnected_) {
-        onConnected_(shared_from_this());
+        onConnected_(this);
     }
     do_read();
 }
@@ -104,7 +104,7 @@ void Session::do_read() {
     socket_.async_read_some(asio::buffer(data_), [this, self](asio::error_code ec, std::size_t length) {
         if (!ec && length > 0) {
             if (onMessage_) {
-                onMessage_(self, data_, length);
+                onMessage_(this, data_.data(), length);
             }
             do_read();
         }

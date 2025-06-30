@@ -20,8 +20,8 @@ class Session
     : public std::enable_shared_from_this<Session>  // 从enable_shared_from_this继承的类需要使用智能指针管理资源
 {
 public:
-    using MessageHandler = std::function<void(std::shared_ptr<Session>, const std::vector<uint8_t>&, size_t)>;
-    using OnConnected = std::function<void(std::shared_ptr<Session>)>;
+    using MessageHandler = std::function<void(Session*, uint8_t*, size_t)>;
+    using OnConnected = std::function<void(Session*)>;
     using OnDisconnected = std::function<void(Session*)>;
 
     Session(asio::ip::tcp::socket socket, int id, MessageHandler handler, OnConnected onConnected,

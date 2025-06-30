@@ -84,6 +84,14 @@ public:
     void setMessageHandler(Session::MessageHandler onMessage, Session::OnConnected onConnected = nullptr,
                            Session::OnDisconnected onDisconnected = nullptr);
 
+    /**
+     * @brief 检查是否在运行
+     * 
+     * @return true 
+     * @return false 
+     */
+    bool isRunning();
+
 private:
     /**
      * 握手回调

@@ -44,6 +44,10 @@ void TcpServer::release() {
         run_thread_.join();
 }
 
+bool TcpServer::isRunning() {
+    return is_running;
+}
+
 void TcpServer::do_accept() {
     acceptor_->async_accept(*socket_, [this](asio::error_code ec)  // 创建一个socket连接
                             {

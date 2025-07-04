@@ -1,6 +1,7 @@
 #ifndef CC_TOOLS_MATHUTILS_H
 #define CC_TOOLS_MATHUTILS_H
 
+#define _USE_MATH_DEFINES
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -12,6 +13,25 @@ namespace utils {
 
 class MathUtils {
 public:
+
+    /**
+     * 角度转弧度
+     * @param deg
+     * @return
+     */
+    static double deg2rad(double deg) {
+        return deg * M_PI / 180.0;
+    }
+
+    /**
+     * 弧度转角度
+     * @param rad
+     * @return
+     */
+    static double rad2deg(double rad) {
+        return rad * 180.0 / M_PI;
+    }
+
     /**
      * @brief 去除数组中的百分之highPercentile的最大值
      *
@@ -69,7 +89,9 @@ public:
         // 参数合法性检查
         if (length == 0 || tol_low < 0.0f || tol_low > 1.0f || tol_high < 0.0f || tol_high > 1.0f ||
             tol_low >= tol_high) {
-            throw std::runtime_error("length == 0 || tol_low < 0.0f || tol_low > 1.0f || tol_high < 0.0f || tol_high > 1.0f || tol_low >= tol_high");
+            throw std::runtime_error(
+                "length == 0 || tol_low < 0.0f || tol_low > 1.0f || tol_high < 0.0f || tol_high > 1.0f || tol_low >= "
+                "tol_high");
         }
 
         // 0. 先遍历一遍，找出 data 数组中的最小值和最大值

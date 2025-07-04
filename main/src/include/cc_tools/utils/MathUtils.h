@@ -1,5 +1,5 @@
-#ifndef CC_TOOLS_ECHOUTILS_H
-#define CC_TOOLS_ECHOUTILS_H
+#ifndef CC_TOOLS_MATHUTILS_H
+#define CC_TOOLS_MATHUTILS_H
 
 #include <algorithm>
 #include <array>
@@ -10,7 +10,7 @@
 namespace CC_Tools {
 namespace utils {
 
-class EchoUtils {
+class MathUtils {
 public:
     /**
      * @brief 去除数组中的百分之highPercentile的最大值
@@ -131,4 +131,4 @@ public:
 }  // namespace utils
 }  // namespace CC_Tools
 
-#endif  // CC_TOOLS_ECHOUTILS_H
+#endif  // CC_TOOLS_MATHUTILS_H

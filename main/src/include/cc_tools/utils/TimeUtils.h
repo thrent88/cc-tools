@@ -2,7 +2,7 @@
 #define CC_TOOLS_TIMEUTILS_H
 
 #include <chrono>
-
+#include <string>
 
 namespace CC_Tools {
 namespace utils {

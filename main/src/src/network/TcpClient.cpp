@@ -4,81 +4,109 @@
 
 #include "../../include/cc_tools/network/TcpClient.h"
 
+#define READ_BUFFER_SIZE 8192  // 8KB
+
 namespace CC_Tools {
 namespace network {
 
-TcpClient::TcpClient(std::string remoteHost, int remotePort) : socket_(io_context_), resolver_(io_context_) {
-    connect(remoteHost, remotePort);
+
+TcpClient::TcpClient(const std::string& remoteHost, uint16_t remotePort)
+    : socket_(io_context_), resolver_(io_context_),
+      remote_host_(remoteHost), remote_port_(remotePort),
+      read_buffer_(READ_BUFFER_SIZE)
+{
+    doConnect(remoteHost, remotePort);
 }
 
 TcpClient::~TcpClient() {
-    if (!isRelease_) {
-        this->release();
+    if (!isReleased_) {
+        release();
     }
 }
 
 bool TcpClient::launch() {
-    if (isRelease_) {
-        throw std::runtime_error("launch error: endpoint is already release");
+    if (isReleased_) {
+        throw std::runtime_error("launch error: endpoint is already released");
     }
-
     if (isRunning_) {
         return true;
     }
 
-    this->runThread_ = std::thread([this]() { this->io_context_.run(); });
+    runThread_ = std::thread([this]() {
+        try {
+            io_context_.run();
+        } catch (const std::exception& e) {
+            if (on_error_) {
+                asio::post(io_context_, [cb=on_error_, msg=std::string(e.what())]() {
+                    cb(asio::error_code(), msg.c_str());
+                });
+            }
+        }
+    });
+
     isRunning_ = true;
     return true;
 }
 
 bool TcpClient::release() {
-    if (!isRunning_ || isRelease_) {
+    if (!isRunning_ || isReleased_) {
         return true;
     }
 
-    asio::post(this->io_context_, [this]() { close(); });
+    asio::post(io_context_, [self=this]() {
+        self->close();
+    });
 
-    if (this->runThread_.joinable()) {
-        this->runThread_.join();
+    if (runThread_.joinable()) {
+        io_context_.stop();
+        runThread_.join();
     }
 
-    isRelease_ = true;
+    io_context_.restart(); // 允许重复 launch
+    isReleased_ = true;
     isRunning_ = false;
     return true;
 }
 
-void TcpClient::connect(const std::string& host, uint16_t port) {
+void TcpClient::doConnect(const std::string& host, uint16_t port) {
     auto self = this;
     resolver_.async_resolve(host, std::to_string(port),
-                            [this, self](const asio::error_code& ec, asio::ip::tcp::resolver::results_type results) {
-                                if (ec) {
-                                    handleError(ec);
-                                    return;
-                                }
+        [this, self](const asio::error_code& ec, asio::ip::tcp::resolver::results_type results) {
+            if (ec) {
+                handleError(ec);
+                return;
+            }
 
-                                asio::async_connect(
-                                    socket_, results,
-                                    [this, self](const asio::error_code& ec, const asio::ip::tcp::endpoint&) {
-                                        if (ec) {
-                                            handleError(ec);
-                                            return;
-                                        }
+            asio::async_connect(socket_, results,
+                [this, self](const asio::error_code& ec, const asio::ip::tcp::endpoint&) {
+                    if (ec) {
+                        handleError(ec);
+                        return;
+                    }
 
-                                        if (on_connect_)
-                                            on_connect_();
-                                        doRead();
-                                    });
-                            });
+                    if (on_connect_) {
+                        on_connect_();
+                    }
+                    doRead();
+                });
+        });
 }
 
 void TcpClient::send(const char* data, size_t length) {
-    auto              self = this;
-    std::vector<char> dataVec(data, data + length);
-    asio::async_write(socket_, asio::buffer(dataVec), [this, self](const asio::error_code& ec, std::size_t /*length*/) {
-        if (ec) {
-            handleError(ec);
-        }
-    });
+    if (isReleased_ || !socket_.is_open()) return;
+
+    auto buffer = std::make_shared<std::vector<char>>(data, data + length);
+    auto self = this;
+    asio::async_write(socket_, asio::buffer(*buffer),
+        [this, self, buffer](const asio::error_code& ec, std::size_t /*length*/) {
+            if (ec) {
+                handleError(ec);
+            }
+        });
+}
+
+void TcpClient::send(const std::string& str) {
+    send(str.data(), str.size());
 }
 
 std::string TcpClient::getLocalIP() const {
@@ -105,41 +133,45 @@ std::string TcpClient::getRemoteIP() const {
     throw std::runtime_error("socket is not open");
 }
 
-
 void TcpClient::doRead() {
     auto self = this;
-    socket_.async_read_some(asio::buffer(read_buffer_), [this, self](const asio::error_code& ec, std::size_t length) {
-        if (ec) {
-            handleError(ec);
-            return;
-        }
+    socket_.async_read_some(asio::buffer(read_buffer_),
+        [this, self](const asio::error_code& ec, std::size_t length) {
+            if (ec) {
+                handleError(ec);
+                return;
+            }
 
-        if (on_receive_) {
-            std::vector<char> data(read_buffer_.begin(), read_buffer_.begin() + length);
-            on_receive_(data.data(), data.size());
-        }
-
-        doRead();
-    });
+            if (on_receive_) {
+                on_receive_(read_buffer_.data(), length);
+            }
+            doRead();
+        });
 }
 
-void TcpClient::close() {
+void TcpClient::close(bool notify) {
     asio::error_code ec;
-    socket_.close(ec);
-    if (ec && on_error_)
-        on_error_(ec);
+    if (socket_.is_open()) {
+        socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+        socket_.close(ec);
+    }
+
+    if (notify && on_disconnect_) {
+        on_disconnect_();
+    }
 }
 
 void TcpClient::handleError(const asio::error_code& ec) {
     if (ec == asio::error::eof || ec == asio::error::connection_reset || ec == asio::error::connection_aborted) {
-        // 远程关闭连接
-        if (on_disconnect_) on_disconnect_();
+        if (on_disconnect_) {
+            on_disconnect_();
+        }
     } else {
-        // 其他错误
-        if (on_error_) on_error_(ec);
+        if (on_error_) {
+            on_error_(asio::error_code(), ec.message());
+        }
     }
-
-    close();  // 始终尝试关闭 socket
+    close(false);
 }
 
 }  // namespace network

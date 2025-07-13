@@ -55,6 +55,13 @@ TEST(CCNetworkTest, TCPClient) {
 
     client.launch();
 
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    std::vector<char> dataChar(5050, 0);
+    client.send(dataChar.data(), dataChar.size());
+    client.send(dataChar.data(), dataChar.size());
+    client.send(dataChar.data(), dataChar.size());
+
     while (1) {
 
     }

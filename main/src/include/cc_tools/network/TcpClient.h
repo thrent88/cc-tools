@@ -6,6 +6,8 @@
 #define CC_Tools_TCPCLIENT_H
 
 #include <asio.hpp>
+#include <thread>
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <string>
@@ -16,65 +18,58 @@ namespace network {
 
 class TcpClient {
 public:
-    using OnConnect = std::function<void()>;
-    using OnReceive = std::function<void(const char* data, size_t length)>;
-    using OnError   = std::function<void(const asio::error_code&)>;
-    using OnDisconnect = std::function<void()>;
+    using ReceiveCallback   = std::function<void(const char*, size_t)>;
+    using ConnectCallback   = std::function<void()>;
+    using DisconnectCallback= std::function<void()>;
+    using ErrorCallback     = std::function<void(const asio::error_code&, std::string)>;
 
-    TcpClient(std::string remoteHost, int remotePort);
-
+    TcpClient(const std::string& remoteHost, uint16_t remotePort);
     ~TcpClient();
 
-    /**
-     * 启动
-     * @return
-     */
-    bool launch();
+    // 禁止拷贝
+    TcpClient(const TcpClient&) = delete;
+    TcpClient& operator=(const TcpClient&) = delete;
 
-    /**
-     * 释放
-     * @return
-     */
+    // 启动 / 释放
+    bool launch();
     bool release();
 
+    // 发送数据
     void send(const char* data, size_t length);
+    void send(const std::string& str);
 
-    /**
-     * 获取本地IP
-     * @return
-     */
+    // 获取本地/远程地址
     std::string getLocalIP() const;
-
-    /**
-     * 获取服务器IP
-     * @return
-     */
     std::string getRemoteIP() const;
 
-    inline void setOnConnect(OnConnect handler) { on_connect_ = std::move(handler); }
-    inline void setOnReceive(OnReceive handler) { on_receive_ = std::move(handler); }
-    inline void setOnError(OnError handler)     { on_error_ = std::move(handler); }
-    inline void setOnDisconnect(OnDisconnect handler) { on_disconnect_ = std::move(handler); }
+    // 设置回调
+    void setOnReceive(ReceiveCallback cb)   { on_receive_ = std::move(cb); }
+    void setOnConnect(ConnectCallback cb)   { on_connect_ = std::move(cb); }
+    void setOnDisconnect(DisconnectCallback cb) { on_disconnect_ = std::move(cb); }
+    void setOnError(ErrorCallback cb)       { on_error_ = std::move(cb); }
 
 private:
+    void doConnect(const std::string& host, uint16_t port);
     void doRead();
+    void close(bool notify = true);
     void handleError(const asio::error_code& ec);
-    void close();
-    void connect(const std::string& host, uint16_t port);
 
-    asio::io_context io_context_;
+    mutable asio::io_context io_context_;
     asio::ip::tcp::socket socket_;
     asio::ip::tcp::resolver resolver_;
-    std::array<char, 1024> read_buffer_;
+    std::thread runThread_;
+    std::vector<char> read_buffer_;
 
-    std::atomic_bool isRunning_ = false;  // 是否正在运行
-    std::thread      runThread_;
-    std::atomic_bool isRelease_ = false;  // 是否已经释放
+    std::string remote_host_;
+    uint16_t remote_port_;
 
-    OnConnect on_connect_;
-    OnReceive on_receive_;
-    OnDisconnect on_disconnect_;
-    OnError on_error_;
+    std::atomic<bool> isRunning_{false};
+    std::atomic<bool> isReleased_{false};
+
+    ReceiveCallback on_receive_;
+    ConnectCallback on_connect_;
+    DisconnectCallback on_disconnect_;
+    ErrorCallback on_error_;
 };
 
 } // network

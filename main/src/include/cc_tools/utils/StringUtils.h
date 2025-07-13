@@ -69,6 +69,25 @@ public:
      * @return
      */
     static bool equal(const std::string& source, const std::string& target);
+
+    /**
+     * @brief 检查字符串是否包含
+     * 
+     * @param string 
+     * @param subString 
+     * @return true 
+     * @return false 
+     */
+    static bool contain(const std::string& string, const std::string& subString);
+
+    /**
+     * @brief 检查字符串是否为数字
+     * 
+     * @param str 
+     * @return true 
+     * @return false 
+     */
+    static bool isNumber(const std::string& str);
 };
 
 }  // namespace utils

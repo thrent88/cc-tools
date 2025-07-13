@@ -13,6 +13,10 @@
 namespace CC_Tools {
 namespace utils {
 
+/**
+ * @brief ID 分配器
+ * 
+ */
 class IdAllocator {
 public:
     explicit IdAllocator(int startId = 0);

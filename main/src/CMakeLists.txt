@@ -19,7 +19,6 @@ endif ()
 target_include_directories(${BIN_NAME}
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/3rd/include"
 )
 target_link_libraries(${BIN_NAME} PUBLIC asio)

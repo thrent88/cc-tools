@@ -9,6 +9,8 @@
 namespace CC_Tools {
 namespace network {
 
+using asio::ip::tcp;
+
 TcpServer::TcpServer(const char* address, short port) {
     this->endpoint = std::make_shared<tcp::endpoint>(asio::ip::make_address(address), port);
     this->acceptor_ = std::make_shared<tcp::acceptor>(this->io_ctx_, *this->endpoint);
@@ -40,6 +42,10 @@ void TcpServer::release() {
     io_ctx_.stop();
     if (run_thread_.joinable())
         run_thread_.join();
+}
+
+bool TcpServer::isRunning() {
+    return is_running;
 }
 
 void TcpServer::do_accept() {
@@ -88,7 +94,7 @@ Session::~Session() {
 
 void Session::start() {
     if (onConnected_) {
-        onConnected_(shared_from_this());
+        onConnected_(this);
     }
     do_read();
 }
@@ -102,7 +108,7 @@ void Session::do_read() {
     socket_.async_read_some(asio::buffer(data_), [this, self](asio::error_code ec, std::size_t length) {
         if (!ec && length > 0) {
             if (onMessage_) {
-                onMessage_(self, data_, length);
+                onMessage_(this, data_.data(), length);
             }
             do_read();
         }

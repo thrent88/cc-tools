@@ -9,20 +9,19 @@
 #include <memory>
 #include <thread>
 
-#include "cc_tools/utils/IdAllocator.h"
 #include "asio.hpp"
+#include "cc_tools/utils/IdAllocator.h"
+
 
 namespace CC_Tools {
 namespace network {
-
-using asio::ip::tcp;
 
 class Session
     : public std::enable_shared_from_this<Session>  // 从enable_shared_from_this继承的类需要使用智能指针管理资源
 {
 public:
-    using MessageHandler = std::function<void(std::shared_ptr<Session>, const std::vector<uint8_t>&, size_t)>;
-    using OnConnected = std::function<void(std::shared_ptr<Session>)>;
+    using MessageHandler = std::function<void(Session*, uint8_t*, size_t)>;
+    using OnConnected = std::function<void(Session*)>;
     using OnDisconnected = std::function<void(Session*)>;
 
     Session(asio::ip::tcp::socket socket, int id, MessageHandler handler, OnConnected onConnected,
@@ -59,11 +58,11 @@ protected:
 
     void do_write(std::size_t length);
 
-    tcp::socket          socket_;
-    std::vector<uint8_t> data_;
-    MessageHandler       onMessage_;
-    OnConnected          onConnected_;
-    OnDisconnected       onDisconnected_;
+    asio::ip::tcp::socket socket_;
+    std::vector<uint8_t>  data_;
+    MessageHandler        onMessage_;
+    OnConnected           onConnected_;
+    OnDisconnected        onDisconnected_;
 
     int sessionId_;
 };
@@ -85,6 +84,14 @@ public:
     void setMessageHandler(Session::MessageHandler onMessage, Session::OnConnected onConnected = nullptr,
                            Session::OnDisconnected onDisconnected = nullptr);
 
+    /**
+     * @brief 检查是否在运行
+     * 
+     * @return true 
+     * @return false 
+     */
+    bool isRunning();
+
 private:
     /**
      * 握手回调
@@ -93,9 +100,9 @@ private:
 
     utils::IdAllocator allocator_;
 
-    std::shared_ptr<tcp::acceptor> acceptor_;
-    std::shared_ptr<tcp::socket>   socket_;
-    std::shared_ptr<tcp::endpoint> endpoint;
+    std::shared_ptr<asio::ip::tcp::acceptor> acceptor_;
+    std::shared_ptr<asio::ip::tcp::socket>   socket_;
+    std::shared_ptr<asio::ip::tcp::endpoint> endpoint;
 
     Session::MessageHandler onMessage_;
     Session::OnConnected    onConnected_;

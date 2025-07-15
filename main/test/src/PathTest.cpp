@@ -24,3 +24,9 @@ TEST(PathTest, getExist) {
 
     EXPECT_TRUE(exist);
 }
+
+TEST(PathTest, getTempPath) {
+    std::string tempPath = PathUtils::getTempPath();
+
+    std::cout << "tempPath: " << tempPath << std::endl;
+}

@@ -34,6 +34,12 @@ public:
      * @return
      */
     static bool exists(const char* path);
+
+    /**
+     * 获取临时目录
+     * @return
+     */
+    static std::string getTempPath();
 };
 
 }  // namespace utils

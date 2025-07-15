@@ -59,5 +59,9 @@ std::string PathUtils::getAbsolutePath(const char* path) {
 bool PathUtils::exists(const char* path) {
     return fs::exists(path);
 }
+
+std::string PathUtils::getTempPath() {
+    return fs::temp_directory_path().string();
+}
 }  // namespace utils
 }  // namespace CC_Tools
